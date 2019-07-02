@@ -1,14 +1,15 @@
 <template>
-  <div class="settings-leaf" :style="cssStyle">
+  <div class="settings-leaf">
     <component :is="`h${depth + 1}`">{{ title }}</component>
     <div class="settings-values">
       <template v-for="k in editableKeys">
         <label :key="`label-${k}-${formId}`" :for="`input-${k}-${formId}`">{{ schema.properties[k].title }}</label>
         <div :key="`default-${k}-${formId}`">{{ defaultValue[k] }}</div>
-        <input class="grid-input" :key="`input-${k}-${formId}`" :id="`input-${k}-${formId}`" type="text" v-model="value[k]" />
+        <input class="grid-input" :pattern="inputPatternByKey[k]" :key="`input-${k}-${formId}`" :name="k" :id="`input-${k}-${formId}`" :type="inputTypeByKey[k]" v-model="value[k]" @input="inputChanged" :class="{'no-value': !value[k]}"/>
+        <div class="grid-input-validation">Validation text</div>
       </template>
     </div>
-    <Settings v-for="k in childKeys" :schema="schema.properties[k]" v-model="value[k]" :defaultValue="defaultValue[k]" :depth="inc(depth)" :key="k"></Settings>
+    <Settings v-for="k in childKeys" :schema="schema.properties[k]" v-model="value[k]" :defaultValue="defaultValue[k]" :depth="inc(depth)" :key="k" @input="childChanged"></Settings>
   </div>
 </template>
 
@@ -48,6 +49,24 @@ export default {
   methods: {
     inc(number) {
       return _.clone(number) + 1
+    },
+    inputChanged(e) {
+      const key = e.target.name
+      const type = _.get(this.schema, `properties.${key}.type`)
+      const rawValue = e.target.value
+      let value
+      switch(type) {
+        case 'integer':
+          value = _.parseInt(rawValue)
+          break;
+        default:
+          value = rawValue
+      }
+      console.log(`${key}(${type}) ${rawValue}`, value)
+      this.$emit('input', this.value)
+    },
+    childChanged(e) {
+      this.$emit('input', this.value)
     }
   },
   computed: {
@@ -63,6 +82,17 @@ export default {
               .keys()
               .value()
     },
+    inputTypeByKey() {
+      return _.zipObject(this.editableKeys, this.editableKeys.map(key => {
+        const type = _.get(this.schema, `properties.${key}.type`)
+        if (type === 'integer') return 'number'
+        if (type === 'boolean') return 'checkbox'
+        return 'text'
+      }))
+    },
+    inputPatternByKey() {
+      return _.zipObject(this.editableKeys, this.editableKeys.map(key => _.get(this.schema, `properties.${key}.pattern`)))
+    },
     title() {
       return _.get(this.schema, 'title', '-- NO TITLE --')
     },
@@ -72,11 +102,6 @@ export default {
     formId() {
       return uuid()
     },
-    cssStyle() {
-      return {
-        'margin-left': `${this.depth * 0}px`
-      }
-    }
   }
 }
 </script>
@@ -84,7 +109,7 @@ export default {
 <style>
 .settings-values {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-columns: 2fr 1fr 1fr;
 }
 .grid-input {
   display: block;
@@ -98,5 +123,20 @@ export default {
   border: 1px solid #ced4da;
   border-radius: .25rem;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.grid-input:focus {
+  border-color: var(--primary);
+}
+.grid-input:invalid {
+  border-color: var(--danger);
+}
+.grid-input:valid {
+  border-color: var(--success);
+}
+textarea.grid-input, select.grid-input, input.grid-input, button.grid-input { 
+  outline: none; 
+}
+.grid-input.no-value {
+  background: repeating-linear-gradient(135deg,transparent,transparent 7px,rgba(0,0,0,.03) 0,rgba(0,0,0,.03) 14px)
 }
 </style>

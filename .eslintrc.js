@@ -1,23 +1,52 @@
-// https://eslint.org/docs/user-guide/configuring
-
 module.exports = {
-  root: true,
-  parserOptions: {
-    parser: 'babel-eslint'
+  'root': true,
+  'parserOptions': {
+      parser: 'babel-eslint',
   },
-  env: {
-    browser: true,
+  'env': {
+      browser: true,
+      node: true,
+      mocha: true,
   },
-  // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-  // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-  extends: ['plugin:vue/essential'],
-  // required to lint *.vue files
-  plugins: [
-    'vue'
+  'globals': {
+      'expect': true,
+  },
+  'extends': [
+      'plugin:vue/recommended',
+      'standard',
+      'google',
   ],
-  // add your custom rules here
-  rules: {
-    // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
-  }
+  'plugins': [
+      'vue',
+  ],
+  'rules': {
+      'generator-star-spacing': 'off',
+      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+      'indent': ['error', 4, {
+          'MemberExpression': 1,
+          'flatTernaryExpressions': true,
+      }],
+      'arrow-parens': ['warn', 'as-needed'],
+      'vue/attribute-hyphenation': ['error', 'never'],
+      'vue/html-self-closing': 'off',
+      'vue/this-in-template': ['error', 'never'],
+      'vue/order-in-components': ['error', {}],
+      'vue/max-attributes-per-line': ['error', {
+          'singleline': 3,
+          'multiline': {
+              'max': 2,
+              'allowFirstLine': true,
+          },
+      }],
+      'max-len': ['warn', { 'code': 120, 'ignoreComments': false }],
+      "require-jsdoc": ["warn", {
+          "require": {
+              "FunctionDeclaration": true,
+              "MethodDefinition": false,
+              "ClassDeclaration": false,
+              "ArrowFunctionExpression": false,
+              "FunctionExpression": false
+          }
+      }]
+  },
 }

@@ -10,6 +10,8 @@
 </template>
 
 <script>
+import { REG_POSITIVE_INTEGER } from '../regexp-lib'
+
 const SCHEMA = {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -34,10 +36,11 @@ const SCHEMA = {
           "$id": "#/properties/gui/properties/paging",
           "type": "integer",
           "title": "The Paging Schema",
-          "default": 0,
+          "default": 20,
           "examples": [
-            100
-          ]
+            0, 100, 20
+          ],
+          "pattern": REG_POSITIVE_INTEGER
         },
         "testText": {
           "$id": "#/properties/gui/properties/testText",
@@ -47,7 +50,7 @@ const SCHEMA = {
           "examples": [
             ""
           ],
-          "pattern": "^(.*)$"
+          "pattern": REG_POSITIVE_INTEGER
         }
       }
     },
@@ -137,14 +140,6 @@ const DEFAULT_SETTINGS = {
     }
 }
 
-let companySettings = {
-
-}
-
-let userSettings = {
-
-}
-
 import Settings from './settings'
 
 export default {
@@ -152,8 +147,10 @@ export default {
   components: {
     Settings,
   },
-  props: {
-    
+  data() {
+    return {
+      settings: {"company":{"invite":{"code":"123"}},"gui":{"paging":"200"}}
+    }
   },
   methods: {
     
@@ -165,9 +162,6 @@ export default {
     defaultSettings() {
       return DEFAULT_SETTINGS
     },
-    settings() {
-      return {}
-    }
   }
 }
 </script>
@@ -175,6 +169,6 @@ export default {
 <style scoped>
 .headding {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-columns: 2fr 1fr 1fr;
 }
 </style>
