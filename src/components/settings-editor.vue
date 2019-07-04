@@ -1,87 +1,61 @@
 <template>
   <div style="width: 800px; margin: 20px auto;">
-    <div class="headding">
-      <div>Nazev</div>
-      <div>Systemove nastaveni</div>
-      <div>Uzivatelske nastaveni</div>
-    </div>
     <Settings :schema="schema" v-model="settings" :defaultValue="defaultSettings"></Settings>
+    <button class="btn btn-primary" @click="save()">Save</button>
   </div>
 </template>
 
 <script>
-import { REG_POSITIVE_INTEGER } from '../regexp-lib'
+import { REG_ARRAY_OF_PATTERNS, REG_POSITIVE_INTEGER, REG_INVITE_CODE } from '../regexp-lib'
 
 const SCHEMA = {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/root.json",
   "type": "object",
-  "title": "The Root Schema",
-  "required": [
-    "gui",
-    "company"
-  ],
+  "title": "nastavení",
   "properties": {
     "gui": {
       "$id": "#/properties/gui",
       "type": "object",
-      "title": "The Gui Schema",
-      "required": [
-        "paging",
-        "testText"
-      ],
+      "title": "uživatelské rozhraní",
       "properties": {
         "paging": {
           "$id": "#/properties/gui/properties/paging",
           "type": "integer",
-          "title": "The Paging Schema",
+          "title": "stránkování",
           "default": 20,
           "examples": [
             0, 100, 20
           ],
-          "pattern": REG_POSITIVE_INTEGER
+          "pattern": REG_POSITIVE_INTEGER,
+          "validityHint": "Musí být celé číslo vetší než 0"
         },
-        "testText": {
-          "$id": "#/properties/gui/properties/testText",
-          "type": "string",
-          "title": "The Testtext Schema",
-          "default": "",
-          "examples": [
-            ""
-          ],
-          "pattern": REG_POSITIVE_INTEGER
-        }
       }
     },
     "company": {
       "$id": "#/properties/company",
       "type": "object",
-      "title": "The Company Schema",
-      "required": [
-        "userCanOverwrite",
-        "invite"
-      ],
+      "title": "nastavení firmy",
       "properties": {
         "userCanOverwrite": {
           "$id": "#/properties/company/properties/userCanOverwrite",
           "type": "array",
-          "title": "The Usercanoverwrite Schema",
+          "title": "uživatel může si upravit nastavení",
           "items": {
             "$id": "#/properties/company/properties/userCanOverwrite/items",
             "type": "string",
             "title": "The Items Schema",
             "default": "",
-            "examples": [
-              "*"
-            ],
-            "pattern": "^(.*)$"
-          }
+          },
+          "pattern": REG_ARRAY_OF_PATTERNS,
+          "validityHint": "Pole klíčů oddelených středníky. Pouze malé ASCII znaky a tečky. Lze použít wildcard charakter *",
+          "examples": ["*", 'gui*', 'gui.*', 'gui.paging', 'gui.pag*'],
         },
         "invite": {
           "$id": "#/properties/company/properties/invite",
           "type": "object",
-          "title": "The Invite Schema",
+          "title": "pozvánky",
           "required": [
             "enabled",
             "code",
@@ -91,7 +65,7 @@ const SCHEMA = {
             "enabled": {
               "$id": "#/properties/company/properties/invite/properties/enabled",
               "type": "boolean",
-              "title": "The Enabled Schema",
+              "title": "zapnuto",
               "default": false,
               "examples": [
                 true
@@ -100,17 +74,16 @@ const SCHEMA = {
             "code": {
               "$id": "#/properties/company/properties/invite/properties/code",
               "type": "string",
-              "title": "The Code Schema",
+              "title": "zvací kód",
               "default": "",
-              "examples": [
-                "1234"
-              ],
-              "pattern": "^(.*)$"
+              "examples": ["12345", "Abc12", "qwertyuiop"],
+              "pattern": REG_INVITE_CODE,
+              "validityHint": "5 až 20 (včetně) znaků a čísel bez diakritiky a mezer.",
             },
             "approve": {
               "$id": "#/properties/company/properties/invite/properties/approve",
               "type": "boolean",
-              "title": "The Approve Schema",
+              "title": "potvrzení pozvánky",
               "default": false,
               "examples": [
                 true
@@ -153,7 +126,9 @@ export default {
     }
   },
   methods: {
-    
+    save() {
+      console.info(this.settings)
+    }
   },
   computed: {
     schema() {
