@@ -1,12 +1,12 @@
 module.exports = {
   'root': true,
+  'clientLogLevel': 'none',
   'parserOptions': {
       parser: 'babel-eslint',
   },
   'env': {
-      browser: true,
-      node: true,
-      mocha: true,
+      browser: false,
+      node: false,
   },
   'globals': {
       'expect': true,

@@ -1,4 +1,4 @@
-export default  {
+export default {
     'rrule': {
         'freq': {
             'yearly': 'ročně',
@@ -31,6 +31,6 @@ export default  {
             '10': 'říjen',
             '11': 'listopad',
             '12': 'prosinec',
-        }
+        },
     },
 }

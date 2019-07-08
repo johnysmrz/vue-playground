@@ -110,4 +110,4 @@ jest,167,9bc79499-6b74-425e-b538-83dfecba8c45
 království,51,f7d3b996-beeb-4c05-8737-472e5d12cf13
 nebeského,69,2ddd76a1-b85e-4ec2-ad2a-772274818b2d`
 
-export default data.split("\n").map(l => l.split(','))
+export default data.split('\n').map(l => l.split(','))

@@ -6,23 +6,23 @@
 
 <script>
 export default {
-  name: 'BaseInput',
-  props: {
-    value: {
-      type: String|undefined,
-      required: true,
+    name: 'BaseInput',
+    props: {
+        value: {
+            type: String | undefined,
+            required: true,
+        },
+        errors: {
+            type: Array,
+            default: _ => [],
+        },
     },
-    errors: {
-      type: Array,
-      default: _ => []
-    }
-  },
-  methods: {
-    triggerChange(event) {
-      console.info(event.target.value)
-      this.$emit('input', event.target.value)
-    }
-  }
+    methods: {
+        triggerChange(event) {
+            console.info(event.target.value)
+            this.$emit('input', event.target.value)
+        },
+    },
 }
 </script>
 
