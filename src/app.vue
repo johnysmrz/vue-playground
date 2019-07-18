@@ -3,7 +3,7 @@
     <!-- <TestForm :config="config"></TestForm> -->
     <!-- <CzSorter></CzSorter> -->
     <!-- <Calendar></Calendar> -->
-    <SettingsEditor></SettingsEditor>
+    <StateEditor></StateEditor>
   </div>
 </template>
 
@@ -13,12 +13,12 @@ import CzSorter from './components/cz-sorter'
 import BootstrapCss from 'bootstrap-css-only'
 import Calendar from './components/calendar'
 import SettingsEditor from './components/settings-editor'
+import StateEditor from './components/state-editor'
 
 export default {
     name: 'App',
     components: {
-        Calendar,
-        SettingsEditor,
+        StateEditor,
     },
     computed: {
         config() {
