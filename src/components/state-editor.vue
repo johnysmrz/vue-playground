@@ -17,12 +17,15 @@
           <td>
             <button @click="endState = s.name; update()" :class="{'end': endState === s.name}">posledni</button>
           </td>
+          <td>
+            <button class="btn btn-danger" @click="removeState(s.name)">X</button>
+          </td>
         </tr>
         <tr>
           <td>
             <input type="text" v-model="newState.name" />
           </td>
-          <td colspan="2">
+          <td colspan="3">
             <button @click="addState" class="btn btn-primary">Pridat</button>
           </td>
         </tr>
@@ -30,24 +33,48 @@
 
       <table class="table">
         <tr>
+          <th>nazev</th>
           <th>ze stavu</th>
           <th>&rarr;</th>
           <th>do stavu</th>
           <th>uzivatel</th>
           <th style="color: goldenrod">notifikovat</th>
+          <th></th>
         </tr>
-        <tr v-for="(c, i) in connections" :key="i" @click="update()">
-          <td>{{ c.from }}</td>
-          <th>&rarr;</th>
-          <td>{{ c.to }}</td>
-          <td>
-            <input type="checkbox" @click="c.userChangeble = !c.userChangeble" :checked="c.userChangeble"/>
-          </td>
-          <td>
-            <input type="checkbox" @click="c.notify = !c.notify" :checked="c.notify"/>
-          </td>
-        </tr>
+        <template v-for="(c, i) in connections">
+          <tr :key="i" @click="update()">
+            <td>
+              {{ c.name }}
+            </td>
+            <td>
+              {{ c.from }}
+            </td>
+            <th>&rarr;</th>
+            <td>
+              {{ c.to }}
+            </td>
+            <td>
+              <input type="checkbox" @click="c.userChangeble = !c.userChangeble" :checked="c.userChangeble"/>
+            </td>
+            <td>
+              <input type="checkbox" @click="c.notify = !c.notify" :checked="c.notify"/>
+            </td>
+            <td>
+              <button class="btn btn-danger" @click="removeConnection(i)">X</button>
+            </td>
+          </tr>
+          <tr :key="`${i}_warnings`" v-if="c.from == endState">
+            <td colspan="6" style="border-top: 0 !important">
+              <div class="alert alert-danger" role="alert" style="margin: -10px 0px 0 0">
+                Z posledniho stavu by nemelo vychazet zadne spojeni
+              </div>
+            </td>
+          </tr>
+        </template>
         <tr>
+          <td>
+            <input type="text" v-model="newConnection.name" />
+          </td>
           <td>
             <!-- <input type="text" v-model="newConnection.from" /> -->
             <select v-model="newConnection.from">
@@ -61,7 +88,7 @@
               <option v-for="(s, i) in states" :key="i" :value="s.name">{{ s.name }}</option>
             </select>
           </td>
-          <td colspan="3">
+          <td colspan="4">
             <button @click="addConnection" class="btn btn-primary">Pridat</button>
           </td>
         </tr>
@@ -75,10 +102,16 @@
 
 <script>
 import Viz from 'viz.js'
-import { Module, render } from 'viz.js/lite.render'
+import { Module, render } from 'viz.js/full.render'
 import _ from 'lodash'
 
 const EXAMPLES = {
+  empty: {
+    states: [],
+    connections: [],
+    startState: undefined,
+    endState: undefined,
+  },
   simplest: {
     states: [
       {name: "novy"},
@@ -86,8 +119,8 @@ const EXAMPLES = {
       {name: "hotovo"},
     ],
     connections: [
-      {from: "novy", to: "v_reseni", userChangeble: true, notify: false},
-      {from: "v_reseni", to: "hotovo", userChangeble: true, notify: false},
+      {name: "otevrit", from: "novy", to: "v_reseni", userChangeble: true, notify: false},
+      {name: "dokoncit", from: "v_reseni", to: "hotovo", userChangeble: true, notify: false},
     ],
     startState: "novy",
     endState: "hotovo",
@@ -102,17 +135,17 @@ const EXAMPLES = {
       {name: "schvaleno"},
     ],
     connections: [
-      {from: "novy", to: "blokovany", userChangeble: false, notify: false},
-      {from: "novy", to: "k_reseni", userChangeble: false, notify: true},
-      {from: "blokovany", to: "k_reseni", userChangeble: false, notify: true},
-      {from: "k_reseni", to: "v_reseni", userChangeble: true, notify: false},
-      {from: "v_reseni", to: "dokonceny", userChangeble: true, notify: false},
-      {from: "dokonceny", to: "k_reseni", userChangeble: true, notify: true},
-      {from: "dokonceny", to: "schvaleno", userChangeble: true, notify: true},
+      {name: "otevrit1", from: "novy", to: "blokovany", userChangeble: false, notify: false},
+      {name: "otevrit", from: "novy", to: "k_reseni", userChangeble: false, notify: true},
+      {name: "otevrit2", from: "blokovany", to: "k_reseni", userChangeble: false, notify: true},
+      {name: "zacit resit", from: "k_reseni", to: "v_reseni", userChangeble: true, notify: false},
+      {name: "dokoncit", from: "v_reseni", to: "dokonceny", userChangeble: true, notify: false},
+      {name: "opravit", from: "dokonceny", to: "k_reseni", userChangeble: true, notify: true},
+      {name: "schvalit", from: "dokonceny", to: "schvaleno", userChangeble: true, notify: true},
     ],
     startState: "novy",
     endState: "schvaleno",
-  }
+  },
 }
 
 export default {
@@ -131,7 +164,7 @@ export default {
         }
     },
     mounted() {
-      this.fillWithExample(this.examples[0])
+      this.fillWithExample(this.examples[2])
     },
     computed: {
       examples() {
@@ -139,6 +172,14 @@ export default {
       }
     },
     methods: {
+      removeState(name) {
+        let x =_.remove(this.states, s => s.name === name)
+        this.update()
+      },
+      removeConnection(index) {
+        _.remove(this.connections, (_,i) => i == index)
+        this.update()
+      },
       fillWithExample(name) {
         this.states = EXAMPLES[name].states
         this.connections = EXAMPLES[name].connections
@@ -167,10 +208,16 @@ export default {
             if(_.get(c, 'notify', false)) {
               props.color = "goldenrod"
             }
+            if(_.get(c, 'name', false)) {
+              props.label = `${c.name}`
+              props.labeldistance = "0"
+              // props.minlen = "2" // working
+              // props.labelhref = "http://www.google.com" // working
+            }
             const propsStr = _.map(props, (v,k) => `${k}="${v}"`).join(',')
             return `${c.from} -> ${c.to} [${propsStr}];\n`
           }).join('')
-          let graphDef = `digraph { ${states} \n ${connections} }`
+          let graphDef = `digraph g{ graph [fontname = "helvetica"]; node [fontname = "helvetica"]; edge [fontname = "helvetica"]; ${states} \n ${connections} }`
 
           console.info(graphDef)
 
@@ -200,8 +247,10 @@ export default {
         this.connections.push({
           from: this.newConnection.from,
           to: this.newConnection.to,
+          name: this.newConnection.name,
           userChangeble: true,
         })
+        this.newConnection = {}
         this.update()
       },
     }
@@ -211,7 +260,7 @@ export default {
 <style>
 .state-editor {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto;
   margin: 20px auto;
   width: 95vw;
